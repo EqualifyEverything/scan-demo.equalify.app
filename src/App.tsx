@@ -158,8 +158,8 @@ function App() {
       <Flex className='results'>
         <Box className='column'>
           {axeIncompleteResults.map((item: AxeResult, index) => (<Card>
-            <Flex gap="3" align="center" key={index}>
-              <Box>
+            <Flex gap="3" align="center" key={index} className='result'>
+              <Box >
                 <Badge color="green">Axe-Core</Badge>
                 <Badge color={item.impact == 'serious' ? 'red' : 'blue'}>{item.impact}</Badge>
                 <Avatar radius="full" fallback={item.nodes.length}></Avatar>
@@ -191,8 +191,8 @@ function App() {
           )
           )}
           {axeViolationsResults.map((item: AxeResult, index) => (<Card>
-            <Flex gap="3" align="center" key={index}>
-              <Box>
+            <Flex gap="3" align="center" key={index} className='result'>
+              <Box >
                 <Badge color="green">Axe-Core</Badge>
                 <Badge>{item.impact}</Badge>
                 <Avatar radius="full" fallback={item.nodes.length}></Avatar>
@@ -225,8 +225,8 @@ function App() {
         </Box>
         <Box className='column'>
           {editoria11yResults.map((item: Editoria11yResult, index) => (<Card>
-            <Flex gap="3" align="center" key={index}>
-              <Box>
+            <Flex gap="3" align="center" key={index} className='result'>
+              <Box >
                 <Badge color='red'>Editoria11y</Badge>
                 <Text as="div" size="2" weight="bold">
                   {item.test}

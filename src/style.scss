@@ -105,16 +105,25 @@ body {
         width:50%;
         .rt-Flex {
             justify-content: flex-start;
-        } 
+        }
+        .rt-Card {
+            margin-bottom:1rem;
+            .result {
+              padding:1rem;
+              max-width: 100%;
+              code {
+                font-family: 'Courier New', Courier, monospace;
+                padding: 1rem;
+                background-color: var(--gray-4);
+                display: block;
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }  
+            } 
+        }
     }
 }
 
-.code {
-    font-family: 'Courier New', Courier, monospace;
-    padding: 1rem;
-    background-color: var(--gray-4);
-    ;
-}
 
 .main {
     margin: 0 auto;
