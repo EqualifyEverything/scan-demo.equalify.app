@@ -1,8 +1,10 @@
 //import { useState } from 'react'
-import { Box, Card, Flex, Text } from '@radix-ui/themes'
+import { Avatar, Badge, Box, Card, Code, Flex, Text } from '@radix-ui/themes'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Form } from "radix-ui";
+import { Collapsible, Form } from "radix-ui";
 import { useState } from 'react';
+import LoadingSpinner from './components/LoadingSpinner';
+import EqualifyLogo from './assets/equalify.svg'
 //import { test } from './data/test';
 
 type AxeResult = {
@@ -11,8 +13,13 @@ type AxeResult = {
   helpUrl: string;
   id: string;
   impact: string;
-  nodes: object[];
+  nodes: AxeNode[];
   tags: string[];
+}
+
+type AxeNode = {
+  failureSummary: string;
+  html: string;
 }
 
 type Editoria11yResult = {
@@ -28,11 +35,24 @@ function App() {
   const [axeViolationsResults, setAxeViolationsResults] = useState<AxeResult[]>([]);
   const [editoria11yResults, setEditoria11yResults] = useState<Editoria11yResult[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  function reset() {
+    setUrl("");
+    setIsLoaded(false);
+    setIsLoading(false);
+    setAxeIncompleteResults([]);
+    setAxeViolationsResults([]);
+    setEditoria11yResults([]);
+  }
+
 
   // Send to scan
   const { data: sendResponse } = useQuery({
     queryKey: ['sendURL'],
     queryFn: async () => {
+      setIsLoading(true);
       const response = await fetch('api/generate/url', {
         method: 'POST',
         headers: {
@@ -42,6 +62,7 @@ function App() {
         body: JSON.stringify({ "url": url })
       })
       if (!response.ok) {
+        setIsLoading(false);
         throw new Error('Network response was not ok')
       }
       return response.json()
@@ -71,6 +92,8 @@ function App() {
       if (result.status == 'completed') {
         //setResults(scanResults.result);
         console.log("Scan complete!");
+        setIsLoading(false);
+        setIsLoaded(true);
         setAxeIncompleteResults(result.result.results.incomplete);
         setAxeViolationsResults(result.result.results.violations);
         setEditoria11yResults(result.result.editoria11yResults);
@@ -86,12 +109,17 @@ function App() {
 
   return (
     <>
+      {(isLoading) ? (
+        <LoadingSpinner />
+      ) : null}
+      <LoadingSpinner />
       <Box width={{ initial: '60vw' }}>
+        <img src={EqualifyLogo} className='equalify-logo'/>
         <Form.Root
           onSubmit={(event) => {
+            event.preventDefault();
             const formData = new FormData(event.currentTarget);
             setUrl(formData.get("url") as string);
-            event.preventDefault();
           }}
           className="FormRoot"
           style={{
@@ -117,76 +145,107 @@ function App() {
               </Form.Message>
             </div>
             <Form.Control asChild>
-              <input className="Input" type="url" required />
+              <input className="Input" type="url" required disabled={isLoading || isLoaded} />
             </Form.Control>
           </Form.Field>
           <Form.Submit asChild>
-            <button className="Button" style={{ marginTop: 10 }}>
+            <button className="Button" style={{ marginTop: 10 }} disabled={isLoading || isLoaded}>
               Scan
             </button>
           </Form.Submit>
+          <button disabled={!(isLoading || isLoaded)} onClick={reset}>Reset</button>
         </Form.Root>
 
       </Box>
-      <Box>
-        {axeIncompleteResults.map((item: AxeResult, index) => (<Card>
-          <Flex gap="3" align="center" key={index}>
-            <Box>
-              <Text as="div" size="2" weight="bold">
-                {item.id}
-              </Text>
-              <Text as="div" size="2" color="gray">
-                {item.description}
-              </Text>
-              <Text>
-                {item.impact}
-              </Text>
-              <Text>
-                Occurances: {item.nodes.length}
-              </Text>
-            </Box>
-          </Flex>
-        </Card>
-        )
-        )}
-        {axeViolationsResults.map((item: AxeResult, index) => (<Card>
-          <Flex gap="3" align="center" key={index}>
-            <Box>
-              <Text as="div" size="2" weight="bold">
-                {item.id}
-              </Text>
-              <Text as="div" size="2" color="gray">
-                {item.description}
-              </Text>
-              <Text>
-                {item.impact}
-              </Text>
-              <Text>
-                Occurances: {item.nodes.length}
-              </Text>
-            </Box>
-          </Flex>
-        </Card>
-        )
-        )}
-        {editoria11yResults.map((item: Editoria11yResult, index) => (<Card>
-          <Flex gap="3" align="center" key={index}>
-            <Box>
-              <Text as="div" size="2" weight="bold">
-                {item.test}
-              </Text>
-              <Text as="div" size="2" color="gray">
-                {item.content}
-              </Text>
-              <Text>
-                {item.node}
-              </Text>
-            </Box>
-          </Flex>
-        </Card>
-        )
-        )}
-      </Box>
+      <Flex>
+        <Box>
+          {axeIncompleteResults.map((item: AxeResult, index) => (<Card>
+            <Flex gap="3" align="center" key={index}>
+              <Box>
+                <Badge color="green">Axe-Core</Badge>
+                <Badge color={item.impact == 'serious'?'red':'blue'}>{item.impact}</Badge>
+                <Avatar radius="full" fallback={item.nodes.length}></Avatar>
+                <Text as="div" size="2" weight="bold">
+                  {item.id}
+                </Text>
+                <Text as="div" size="2" color="gray">
+                  {item.description}
+                </Text>
+
+                <Collapsible.Root>
+                  <Collapsible.Trigger>
+                    <Text>
+                      View {item.nodes.length} Occurrences
+                    </Text>
+                  </Collapsible.Trigger>
+                  <Collapsible.Content className="CollapsibleContent">
+                    {item.nodes.map((axenode: AxeNode, i) => (
+                      <div className='axe-node' key={i}>
+                        <Text as="div" size="2" color="gray">{axenode.failureSummary}</Text>
+                        <Code>{axenode.html}</Code>
+                      </div>
+                    ))}
+                  </Collapsible.Content>
+                </Collapsible.Root>
+              </Box>
+            </Flex>
+          </Card>
+          )
+          )}
+          {axeViolationsResults.map((item: AxeResult, index) => (<Card>
+            <Flex gap="3" align="center" key={index}>
+              <Box>
+                <Badge color="green">Axe-Core</Badge>
+                <Badge>{item.impact}</Badge>
+                <Avatar radius="full" fallback={item.nodes.length}></Avatar>
+                <Text as="div" size="2" weight="bold">
+                  {item.id}
+                </Text>
+                <Text as="div" size="2" color="gray">
+                  {item.description}
+                </Text>
+                <Collapsible.Root>
+                  <Collapsible.Trigger>
+                    <Text>
+                      View {item.nodes.length} Occurrences
+                    </Text>
+                  </Collapsible.Trigger>
+                  <Collapsible.Content className="CollapsibleContent">
+                    {item.nodes.map((axenode: AxeNode, i) => (
+                      <div className='axe-node' key={i}>
+                        <Text as="div" size="2" color="gray">{axenode.failureSummary}</Text>
+                        <Code>{axenode.html}</Code>
+                      </div>
+                    ))}
+                  </Collapsible.Content>
+                </Collapsible.Root>
+              </Box>
+            </Flex>
+          </Card>
+          )
+          )}
+        </Box>
+        <Box>
+          {editoria11yResults.map((item: Editoria11yResult, index) => (<Card>
+            <Flex gap="3" align="center" key={index}>
+              <Box>
+                <Badge color='red'>Editoria11y</Badge>
+                <Text as="div" size="2" weight="bold">
+                  {item.test}
+                </Text>
+                <Text as="div" size="2" color="gray">
+                  <div dangerouslySetInnerHTML={{ __html: item.content }}></div>
+                </Text>
+                <Code>
+                  {item.node}
+                </Code>
+              </Box>
+            </Flex>
+          </Card>
+          )
+          )}
+        </Box>
+      </Flex>
     </>
   )
 }
