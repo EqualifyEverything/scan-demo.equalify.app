@@ -101,7 +101,8 @@ function App() {
       }
       return await response.json()
     },
-    enabled: !!jobId,
+    retry: true,
+    enabled: !!jobId || isLoaded,
   });
 
 
