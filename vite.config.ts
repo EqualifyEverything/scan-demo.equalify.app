@@ -7,10 +7,10 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://scan-dev.equalify.app',  // Replace with your backend API URL
+        target: 'https://scan-dev.equalify.app',  
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '') // Optional: Remove the /api prefix
+        rewrite: (path) => path.replace(/^\/api/, '') 
       }
     }
   }

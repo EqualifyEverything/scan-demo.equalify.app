@@ -39,12 +39,13 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   function reset() {
-    setUrl("");
+    /* setUrl("");
     setIsLoaded(false);
     setIsLoading(false);
     setAxeIncompleteResults([]);
     setAxeViolationsResults([]);
-    setEditoria11yResults([]);
+    setEditoria11yResults([]); */
+    window.location.reload();
   }
 
 
