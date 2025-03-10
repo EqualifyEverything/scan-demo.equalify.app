@@ -112,9 +112,8 @@ function App() {
       {(isLoading) ? (
         <LoadingSpinner />
       ) : null}
-      <LoadingSpinner />
-      <Box width={{ initial: '60vw' }}>
-        <img src={EqualifyLogo} className='equalify-logo'/>
+      <Box width={{ initial: '60vw' }} className='main'>
+        <img src={EqualifyLogo} className='equalify-logo' />
         <Form.Root
           onSubmit={(event) => {
             event.preventDefault();
@@ -136,17 +135,18 @@ function App() {
                 justifyContent: "space-between",
               }}
             >
-              <Form.Label className="FormLabel">URL</Form.Label>
-              <Form.Message className="FormMessage" match="valueMissing">
-                Please enter a URL
-              </Form.Message>
-              <Form.Message className="FormMessage" match="typeMismatch">
-                Please provide a valid URL
-              </Form.Message>
+              <Form.Label className="FormLabel">Enter a URL</Form.Label>
+
+              <Form.Control asChild>
+                <input className="Input" type="url" required disabled={isLoading || isLoaded} />
+              </Form.Control>
             </div>
-            <Form.Control asChild>
-              <input className="Input" type="url" required disabled={isLoading || isLoaded} />
-            </Form.Control>
+            <Form.Message className="FormMessage" match="valueMissing">
+              Please enter a URL
+            </Form.Message>
+            <Form.Message className="FormMessage" match="typeMismatch">
+              Please provide a valid URL
+            </Form.Message>
           </Form.Field>
           <Form.Submit asChild>
             <button className="Button" style={{ marginTop: 10 }} disabled={isLoading || isLoaded}>
@@ -163,7 +163,7 @@ function App() {
             <Flex gap="3" align="center" key={index}>
               <Box>
                 <Badge color="green">Axe-Core</Badge>
-                <Badge color={item.impact == 'serious'?'red':'blue'}>{item.impact}</Badge>
+                <Badge color={item.impact == 'serious' ? 'red' : 'blue'}>{item.impact}</Badge>
                 <Avatar radius="full" fallback={item.nodes.length}></Avatar>
                 <Text as="div" size="2" weight="bold">
                   {item.id}
