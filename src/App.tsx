@@ -121,44 +121,42 @@ function App() {
             setUrl(formData.get("url") as string);
           }}
           className="FormRoot"
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-          }}>
+        >
 
           <Form.Field className="FormField" name="url">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-              }}
-            >
+            <div>
               <Form.Label className="FormLabel">Enter a URL</Form.Label>
-
-              <Form.Control asChild>
-                <input className="Input" type="url" required disabled={isLoading || isLoaded} />
-              </Form.Control>
+              <Form.Message className="FormMessage" match="valueMissing">
+                Please enter a URL
+              </Form.Message>
+              <Form.Message className="FormMessage" match="typeMismatch">
+                Please provide a valid URL
+              </Form.Message>
             </div>
-            <Form.Message className="FormMessage" match="valueMissing">
-              Please enter a URL
-            </Form.Message>
-            <Form.Message className="FormMessage" match="typeMismatch">
-              Please provide a valid URL
-            </Form.Message>
+            <Form.Control asChild>
+              <input className="Input" type="url" required disabled={isLoading || isLoaded} />
+            </Form.Control>
+
+
           </Form.Field>
-          <Form.Submit asChild>
-            <button className="Button" style={{ marginTop: 10 }} disabled={isLoading || isLoaded}>
-              Scan
-            </button>
-          </Form.Submit>
-          <button disabled={!(isLoading || isLoaded)} onClick={reset}>Reset</button>
+          <Flex style={{
+            justifyContent: "center",
+            alignItems: "center",
+            alignContent: "center",
+            gap: "1rem"
+          }}>
+            <Form.Submit asChild>
+              <button className="Button" style={{ marginTop: 10 }} disabled={isLoading || isLoaded}>
+                Scan
+              </button>
+            </Form.Submit>
+            <button className="Button" disabled={!(isLoading || isLoaded)} onClick={reset}>Reset</button>
+          </Flex>
         </Form.Root>
 
       </Box>
-      <Flex>
-        <Box>
+      <Flex className='results'>
+        <Box className='column'>
           {axeIncompleteResults.map((item: AxeResult, index) => (<Card>
             <Flex gap="3" align="center" key={index}>
               <Box>
@@ -225,7 +223,7 @@ function App() {
           )
           )}
         </Box>
-        <Box>
+        <Box className='column'>
           {editoria11yResults.map((item: Editoria11yResult, index) => (<Card>
             <Flex gap="3" align="center" key={index}>
               <Box>
