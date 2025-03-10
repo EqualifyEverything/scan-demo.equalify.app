@@ -3,4 +3,3 @@
   to = "https://scan-dev.equalify.app/:splat"
   status = 200
   force = true
-  conditions = {Role = ["admin", "cms"]}
