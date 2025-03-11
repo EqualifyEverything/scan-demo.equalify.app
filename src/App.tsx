@@ -1,5 +1,5 @@
 //import { useState } from 'react'
-import { Avatar, Badge, Box, Card, Code, Flex, Text } from '@radix-ui/themes'
+import { AlertDialog, Avatar, Badge, Box, Button, Card, Code, Flex, Text } from '@radix-ui/themes'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Collapsible, Form } from "radix-ui";
 import { useState } from 'react';
@@ -37,6 +37,8 @@ function App() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const [alertDialogOpen, setAlertDialogOpen] = useState(false);
 
   function reset() {
     /* setUrl("");
@@ -99,6 +101,10 @@ function App() {
         setAxeViolationsResults(result.result.results.violations);
         setEditoria11yResults(result.result.editoria11yResults);
       }
+      if (result.status == 'failed') {
+        console.log("Scan Failed!");
+        setAlertDialogOpen(true);
+      }
       return await response.json()
     },
     retry: true,
@@ -114,6 +120,22 @@ function App() {
       {(isLoading) ? (
         <LoadingSpinner />
       ) : null}
+      <AlertDialog.Root open={alertDialogOpen}>
+        <AlertDialog.Content maxWidth="450px">
+          <AlertDialog.Title>Scan Failed</AlertDialog.Title>
+          <AlertDialog.Description size="2">
+            Sorry, there was a problem scanning <a href={url}>{url}</a>. Please ensure the page is valid and try again!
+          </AlertDialog.Description>
+
+          <Flex gap="3" mt="4" justify="end">
+            <AlertDialog.Action onClick={() => { window.location.reload(); }}>
+              <Button variant="solid" color="red">
+                OK
+              </Button>
+            </AlertDialog.Action>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
       <Box width={{ initial: '60vw' }} className='main'>
         <img src={EqualifyLogo} className='equalify-logo' />
         <Form.Root
@@ -127,12 +149,12 @@ function App() {
 
           <Form.Field className="FormField" name="url">
             <div>
-              <Form.Label className="FormLabel">Enter a URL</Form.Label>
+              <Form.Label className="FormLabel">Enter a URL to Scan:</Form.Label>
               <Form.Message className="FormMessage" match="valueMissing">
-                Please enter a URL
+                Please enter a URL!
               </Form.Message>
               <Form.Message className="FormMessage" match="typeMismatch">
-                Please provide a valid URL
+                That URL appears to be invalid!
               </Form.Message>
             </div>
             <Form.Control asChild>
