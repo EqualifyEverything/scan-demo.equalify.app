@@ -163,10 +163,16 @@ body {
     margin: 0 auto;
     text-align: center;
 
+    .logos {
+        padding-top: 2rem;
+    }
     .equalify-logo {
         max-width: 300px;
         text-align: center;
-        padding-top: 2rem;
+        
+    }
+     .uic-logo {
+        max-width:60px;
     }
 }
 
@@ -194,6 +200,7 @@ body {
     .equalify-logo {
         max-width: 600px;
     }
+   
 
     .loading-text {
         font-style: italic;

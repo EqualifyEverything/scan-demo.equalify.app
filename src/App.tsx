@@ -1,10 +1,11 @@
 //import { useState } from 'react'
-import { AlertDialog, Avatar, Badge, Box, Button, Card, Code, Flex, Text } from '@radix-ui/themes'
+import { AlertDialog, Avatar, Badge, Box, Button, Card, Code, Container, Flex, Heading, Strong, Table, Text } from '@radix-ui/themes'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Collapsible, Form } from "radix-ui";
 import { useState } from 'react';
 import LoadingSpinner from './components/LoadingSpinner';
 import EqualifyLogo from './assets/equalify.svg'
+import UICLogo from './assets/uic.svg'
 //import { test } from './data/test';
 
 type AxeResult = {
@@ -28,12 +29,29 @@ type Editoria11yResult = {
   node: string;
 }
 
+type PDFResultRule = {
+  Rule: string;
+  Status: string;
+  Description: string;
+}
+
+type PDFResult = {
+  "Alternate Text": PDFResultRule[];
+  "Document": PDFResultRule[]
+  "Forms": PDFResultRule[]
+  "Headings": PDFResultRule[]
+  "Lists": PDFResultRule[]
+  "Page Content": PDFResultRule[]
+  "Tables": PDFResultRule[];
+}
+
 function App() {
   const queryClient = useQueryClient()
   const [url, setUrl] = useState("");
   const [axeIncompleteResults, setAxeIncompleteResults] = useState<AxeResult[]>([]);
   const [axeViolationsResults, setAxeViolationsResults] = useState<AxeResult[]>([]);
   const [editoria11yResults, setEditoria11yResults] = useState<Editoria11yResult[]>([]);
+  const [PdfResults, setPdfResults] = useState<PDFResult>(new Object as PDFResult);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -66,7 +84,7 @@ function App() {
       })
       if (!response.ok) {
         setIsLoading(false);
-        throw new Error('Network response was not ok')
+        throw new Error('Network response for sendURL was not ok')
       }
       return response.json()
     },
@@ -82,7 +100,7 @@ function App() {
         method: 'GET'
       })
       if (!response.ok) {
-        throw new Error('Network response was not ok')
+        throw new Error('Network response for getScanResults was not ok')
       }
 
       const result = await response.json();
@@ -91,19 +109,24 @@ function App() {
       if (result.status == 'delayed' || result.status == 'active' || result.status == 'waiting') {
         console.log("Scan status: " + result.status + ", retrying...");
         queryClient.invalidateQueries({ queryKey: ['getScanResults'] });
+        return await response.json();
       }
       if (result.status == 'completed') {
-        //setResults(scanResults.result);
         console.log("Scan complete!");
         setIsLoading(false);
         setIsLoaded(true);
-        setAxeIncompleteResults(result.result.results.incomplete);
-        setAxeViolationsResults(result.result.results.violations);
-        setEditoria11yResults(result.result.editoria11yResults);
+        if (result.result.results) setAxeIncompleteResults(result.result.results.incomplete);
+        if (result.result.results) setAxeViolationsResults(result.result.results.violations);
+        if (result.result.editoria11yResults) setEditoria11yResults(result.result.editoria11yResults);
+        if (result.result.PDFresults["Detailed Report"]) setPdfResults(result.result.PDFresults["Detailed Report"]);
+        console.log("PDF Results:");
+        console.log(result.result.PDFresults);
+        return await response.json();
       }
       if (result.status == 'failed') {
         console.log("Scan Failed!");
         setAlertDialogOpen(true);
+        return await response.json();
       }
       return await response.json()
     },
@@ -137,7 +160,10 @@ function App() {
         </AlertDialog.Content>
       </AlertDialog.Root>
       <Box width={{ initial: '60vw' }} className='main'>
-        <img src={EqualifyLogo} className='equalify-logo' />
+        <Flex align="center" justify="center" className='logos' gap="1rem">
+          <img src={UICLogo} className='uic-logo' />
+          <img src={EqualifyLogo} className='equalify-logo' />
+        </Flex>
         <Form.Root
           onSubmit={(event) => {
             event.preventDefault();
@@ -268,6 +294,49 @@ function App() {
           )}
         </Box>
       </Flex>
+      <Container>
+        <Box>
+        { PdfResults.Document ? (
+          <Box p="1rem">
+          <Heading size="5" align="center">PDF Scan Results</Heading>
+          </Box>
+        ): (<></>)}
+        
+          {PdfResults && Object.entries(PdfResults).map(([key, result]) => (
+            <Card mb="1rem">
+              <Box key={key} className='result'>
+                <Box p="1rem">
+                  <Heading size="4" align="center">{key}</Heading>
+                </Box>
+                <Table.Root>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Issue</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {result.map((item, index) => (
+                      <Table.Row key={index}>
+                        <Table.RowHeaderCell>
+                          <Text size="3"><Strong>{item.Rule}</Strong></Text>
+                          <Text size="2" as="div">{item.Description}</Text>
+                        </Table.RowHeaderCell>
+                        <Table.Cell>
+                          <Badge color={item.Status == 'Failed' ? 'red' : 'blue'}>{item.Status}</Badge>
+                        </Table.Cell>
+                      </Table.Row>
+
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+
+              </Box>
+            </Card>
+
+          ))}
+        </Box>
+      </Container>
     </>
   )
 }
