@@ -68,7 +68,10 @@ function App() {
     window.location.reload();
   }
 
-
+  const auth =  { 
+        pdfServicesClientID : "ddf53292959a4cadb2be017bb16103b3",
+        pdfServicesClientSecret : "p8e-Hr3u2M_5Y5A2hLiXRmuSHJ9EHt4yy5GR"  
+  }
   // Send to scan
   const { data: sendResponse } = useQuery({
     queryKey: ['sendURL'],
@@ -80,7 +83,7 @@ function App() {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ "url": url })
+        body: JSON.stringify({ "url": url, "auth": auth })
       })
       if (!response.ok) {
         setIsLoading(false);
@@ -106,7 +109,7 @@ function App() {
       const result = await response.json();
       console.log(result);
 
-      if (result.status == 'delayed' || result.status == 'active' || result.status == 'waiting') {
+      if (result.status == 'delayed' || result.status == 'active' || result.status == 'waiting' || result.status == 'waiting-children') {
         console.log("Scan status: " + result.status + ", retrying...");
         queryClient.invalidateQueries({ queryKey: ['getScanResults'] });
         return await response.json();
